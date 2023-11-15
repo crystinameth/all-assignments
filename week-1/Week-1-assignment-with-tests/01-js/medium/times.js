@@ -8,5 +8,22 @@ Hint - use Date class exposed in JS
 */
 
 function calculateTime(n) {
-    return 0.01;
+    const start = new Date();
+    let sum = 0;
+    for( let i = 1; i <= n; i++){
+        sum += i;
+    }
+    const end = new Date();
+    const timeElapsed = (end - start) / 1000;   // div by 1000 to convert millisec to sec
+    console.log(timeElapsed);
+    return {sum, timeElapsed};
 }
+
+const result1 = calculateTime(100);
+console.log(`Sum: ${result1.sum}, Time: ${result1.timeElapsed} seconds`);
+
+const result2 = calculateTime(100000);
+console.log(`Sum: ${result2.sum}, Time: ${result2.timeElapsed} seconds`);
+
+const result3 = calculateTime(1000000000);
+console.log(`Sum: ${result3.sum}, Time: ${result3.timeElapsed} seconds`);

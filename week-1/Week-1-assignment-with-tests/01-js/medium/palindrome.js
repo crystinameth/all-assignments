@@ -7,7 +7,18 @@
 */
 
 function isPalindrome(str) {
-  return true;
+  /* lower convert
+     clean string -> special char , spaces etc
+     reverse string
+     check and return 
+  */
+  const lowerStr = str.toLowerCase();
+
+  const cleanStr = lowerStr.replace(/[^a-z]/g,''); // regular expression to exclude everything except lower[a-z], /g -> globally applied to whole string, else will only find first replacement and exit 
+ 
+  const reversedStr = cleanStr.split('').reverse().join('');
+ 
+  return cleanStr === reversedStr;
 }
 
 module.exports = isPalindrome;
