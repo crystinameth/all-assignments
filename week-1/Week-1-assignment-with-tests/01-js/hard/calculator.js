@@ -17,6 +17,47 @@
   - `npm run test-calculator`
 */
 
-class Calculator {}
+class Calculator {
+  constructor(){
+    this.result = 0;
+  }
+  add(number){
+    this.result += number;
+  }
+  subtract(number){
+    this.result -= number;
+  }
+  multiply(number){
+    this.result *= number;
+  }
+  divide(number){
+    if(number !== 0){
+      this.result /= number;
+    }
+    else{
+      throw new Error();
+    }
+  }
+  clear(){
+    this.result = 0;
+  }
+  getResult(){
+    return this.result;
+  }
+  calculate(expression){
+    //remove spaces , any extra characters
+    const cleanExp = expression.replace(/\s+/g,'');  // \s+: any white spaces replaced with empty string
+  if(!/^[0-9+\-*/().]+$/.test(cleanExp)){
+    throw new Error("Invalid input");
+  }
+
+  try{
+    this.result = eval(cleanExp);  // eval function is used to evaluate the expression here , cuz we're assuming that valid expressions are only entered, else evaluate with proper checks 
+  }
+  catch(error){
+    throw new Error("Invalid input");
+  }
+  }
+}
 
 module.exports = Calculator;
