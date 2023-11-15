@@ -6,17 +6,47 @@
 
 
 function waitOneSecond() {
-
+    return new Promise((resolve) =>{
+        setTimeout(() => {
+            resolve('resolved after 1 second ');
+        }, 1000);
+    });
 }
 
 function waitTwoSecond() {
-
+    return new Promise((resolve) =>{
+        setTimeout(() => {
+            resolve('resolved after 2 seconds ');
+        }, 2000);
+    });
 }
 
 function waitThreeSecond() {
-
+    return new Promise((resolve) =>{
+        setTimeout(() => {
+            resolve('resolved after 3 seconds');
+        }, 3000);
+    })
 }
 
 function calculateTime() {
 
+    const start = Date.now();
+
+    Promise.all([
+        waitOneSecond(),
+        waitTwoSecond(),
+        waitThreeSecond(),
+    ])
+    .then((results) => {
+        const duration = Date.now() - start;
+        console.log('All promises resolved :' , results);
+        console.log(`Total duration: ${duration} milliseconds`);
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+
 }
+
+calculateTime();

@@ -3,6 +3,14 @@
  * During this time the thread should not be able to do anything else.
  */
 
-function sleep (seconds) {
+function sleep (milliseconds) {
 
+    const start = Date.now();
+    while(Date.now() - start < milliseconds){
+        //do nothing
+    }
 }
+
+console.log('Before buy wait');
+sleep(5000);
+console.log('After busy wait');
