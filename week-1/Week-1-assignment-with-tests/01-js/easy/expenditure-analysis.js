@@ -30,11 +30,11 @@ function calculateTotalSpentByCategory(transactions) {
      });
 
      //object to array of objects
-     const [] = Object.keys(categoryTotal).map(category => ({
+     const result = Object.keys(categoryTotal).map(category => ({
       category,
       totalSpent: categoryTotal[category]
      }));
-  return [];
+  return result;
 }
 
 module.exports = calculateTotalSpentByCategory;
