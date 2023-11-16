@@ -39,11 +39,103 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
+const fs = require('fs').promises;
 
 const app = express();
+const PORT = 3000;
 
+//body-parsing middleware
 app.use(bodyParser.json());
 
+//In-memory storage 
+let todos = [];
+
+//helper func to save to file
+async function saveToFile() {
+  try{
+    await fs.appendFile('todos.json', JSON.stringify(todos, null, 2));
+  } catch (error) {
+    console.error('Error saving todos to file', error);
+  }
+}
+
+//helper func to load todos from file
+async function loadFromFile() {
+  try{
+    const data = await fs.readFile('todos.json', 'utf-8');
+    todos = JSON.parse(data);
+  } catch (error) {
+    console.error('Error loading todos from file', error);
+  }
+}
+
+//load todos from file on server start
+loadFromFile();
+
+//middleware to handle 404 for undefined routes
+app.use((req, res, next) => {
+ res.status(404).send('Not found!');
+});
+
+app.get('/todos', (req, res) => {
+  res.status(200).json(todos);
+});
+
+app.get('/todos/:id', (req, res) => {
+  const id = req.params.id;
+  const todo = todos.find((item) => item.id === parseInt(id));
+
+  if (todo) {
+    res.status(200).json(todo);
+  } else {
+    res.status(404).send('Not Found!');
+  }
+});
+
+app.post('/todos', (req, res) => {
+  const newTodo = req.body;
+  newTodo.id = Math.floor(Math.random() * 1000000);
+
+  todos.push(newTodo);
+
+  saveToFile();
+
+  res.status(201).json(newTodo);
+});
+
+app.put('/todos/:id', (req, res) => {
+  const id = req.params.id;
+  const updatedTodo = req.body;
+
+  const index = todos.findIndex((item) => item.id === parseInt(id));
+
+  if(index !== -1) {
+    todos[index] = {...todos[index], ...updatedTodo};
+    saveToFile();
+    res.status(200).send('OK');
+  }
+  else{
+    res.status(404).send('Not Found!');
+  }
+});
+
+app.delete('/todos/:id', (req, res) => {
+  const id = req.params.id;
+  const index = todos.findIndex((item) => item.id === parseInt(id));
+
+  if(index !== -1){
+    todos.splice(index, 1);
+    saveToFile();
+    res.status(200).send('OK');
+  } else {
+    res.status(404).send('Not Found!');
+  }
+});
+
 module.exports = app;
+
+app.listen(PORT, () => {
+  console.log(`Server is running on localhost : ${PORT}`);
+});
