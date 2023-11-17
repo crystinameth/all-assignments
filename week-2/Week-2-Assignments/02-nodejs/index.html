@@ -1,0 +1,131 @@
+<html>
+    <head>
+        <title>TODO APP</title>
+    </head>
+
+    <script>
+
+        /*   call back hell , or basically how callbacks work for fetch library
+            using async and await is easy , but this is for basic understanding 
+
+            function parsedData(data){
+            console.log(data);
+             }
+             function callback(res) {
+            res.json().then(parsedData);
+             }
+             function onPress(){
+            alert("Todo added!");
+            fetch('http://localhost:3000/todos', {
+                method: "GET"
+            }).then(callback)
+             }
+        */
+        
+        function deleteTodo(id){
+            console.log(id);
+            fetch('http://localhost:3000/todos/' + id, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then(() => {
+                console.log('Delete Done!');
+            })
+        }
+
+        function todosCallback(data){
+            console.log(data);
+            var parentElement = document.getElementById("mainArea");
+           // parentElement.innerHTML = JSON.stringify(data); // way to insert js variables into html
+           for(var i=0 ; i < data.length; i++){
+            var childElement = document.createElement("div");
+           // childElement.innerHTML = data[i].title;
+           /*  
+                but this child div itself needs 3 children
+           */
+           var grandChildElement1 = document.createElement("span");
+           grandChildElement1.innerHTML = data[i].title;
+
+           var grandChildElement2 = document.createElement("span");
+           grandChildElement2.innerHTML = data[i].description;
+
+           var grandChildElement3 = document.createElement("button");
+           grandChildElement3.innerHTML = "Delete";
+           grandChildElement3.setAttribute("onclick", "deleteTodo(" + data[i].id + ")")
+
+           // now append these grandkids to child element 
+           childElement.appendChild(grandChildElement1);
+           childElement.appendChild(grandChildElement2);
+           childElement.appendChild(grandChildElement3);
+
+            parentElement.appendChild(childElement);
+           }
+            
+        }
+        function getData(){
+            fetch('http://localhost:3000/todos', {
+                method: "GET",
+            }).then((res) => {
+                res.json().then(todosCallback);
+            })
+        }
+
+        getData();                                              // isko call karna toh zaruri hai wrna load hi nahi hoga :))
+
+        function parsedData(data){
+            console.log(data);
+
+        var parentElement = document.getElementById("mainArea");
+        var childElement = document.createElement("div");
+
+        var grandChildElement1 = document.createElement("span");
+        grandChildElement1.innerHTML = data.title
+
+        var grandChildElement2 = document.createElement("span");
+        grandChildElement2.innerHTML = data.description
+
+        var grandChildElement3 = document.createElement("button");
+        grandChildElement3.innerHTML = "Delete"
+
+        childElement.appendChild(grandChildElement1)
+        childElement.appendChild(grandChildElement2)
+        childElement.appendChild(grandChildElement3)
+
+        parentElement.appendChild(childElement);
+        }
+
+        function onPress(){
+            var title = document.getElementById("title").value;
+            //console.log(title);
+            var description = document.getElementById("description").value;
+           // console.log(description);
+            alert("Todo added!");
+            fetch('http://localhost:3000/todos',{
+                method: "POST",
+                body: JSON.stringify({
+                    title: title,
+                    description: description
+                }),
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }).then((res) => {
+                res.json().then(parsedData)
+            })
+        }
+    </script>
+
+    <body>
+        TODO Title
+        <input type = "text" id = "title"></input>
+        <br><br>
+        TODO Description
+        <input type = "text" id = "description"></input>
+        <br><br>
+        <button onclick="onPress()">Send TODO</button>
+        <div id = "mainArea">
+            TODO List
+        </div>
+    </body>
+</html>
