@@ -39,103 +39,138 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-const express = require("express");
-const bodyParser = require("body-parser");
-const fs = require('fs').promises;
-
-const app = express();
-const PORT = 3000;
-
-//body-parsing middleware
-app.use(bodyParser.json());
-
-//In-memory storage 
-let todos = [];
-
-//helper func to save to file
-async function saveToFile() {
-  try{
-    await fs.appendFile('todos.json', JSON.stringify(todos, null, 2));
-  } catch (error) {
-    console.error('Error saving todos to file', error);
+  const express = require("express")
+  const bodyParser = require("body-parser")
+  const fs = require("fs")
+  const path = require("path")
+  
+  const app = express()
+  const port = 3000
+  
+  app.use(bodyParser.json())
+  // let todos = []
+  
+  function findID(arr, id){
+    for(let i = 0; i < arr.length; i++){
+      if (arr[i].id === id)
+        return i
+    }
+    return -1
   }
-}
-
-//helper func to load todos from file
-async function loadFromFile() {
-  try{
-    const data = await fs.readFile('todos.json', 'utf-8');
-    todos = JSON.parse(data);
-  } catch (error) {
-    console.error('Error loading todos from file', error);
+  
+  function remove(arr,id){
+  //   let index = findID(arr,id)
+  //   if(index > -1){
+  //     arr.splice(index,1)
+  //   }
+  //   return arr
+    let newTodo = []
+    for(let i=0; i<arr.length; i++){
+      if(i !== id) newTodo.push(arr[i])
+    }
+    return newTodo
   }
-}
-
-//load todos from file on server start
-loadFromFile();
-
-//middleware to handle 404 for undefined routes
-app.use((req, res, next) => {
- res.status(404).send('Not found!');
-});
-
-app.get('/todos', (req, res) => {
-  res.status(200).json(todos);
-});
-
-app.get('/todos/:id', (req, res) => {
-  const id = req.params.id;
-  const todo = todos.find((item) => item.id === parseInt(id));
-
-  if (todo) {
-    res.status(200).json(todo);
-  } else {
-    res.status(404).send('Not Found!');
-  }
-});
-
-app.post('/todos', (req, res) => {
-  const newTodo = req.body;
-  newTodo.id = Math.floor(Math.random() * 1000000);
-
-  todos.push(newTodo);
-
-  saveToFile();
-
-  res.status(201).json(newTodo);
-});
-
-app.put('/todos/:id', (req, res) => {
-  const id = req.params.id;
-  const updatedTodo = req.body;
-
-  const index = todos.findIndex((item) => item.id === parseInt(id));
-
-  if(index !== -1) {
-    todos[index] = {...todos[index], ...updatedTodo};
-    saveToFile();
-    res.status(200).send('OK');
-  }
-  else{
-    res.status(404).send('Not Found!');
-  }
-});
-
-app.delete('/todos/:id', (req, res) => {
-  const id = req.params.id;
-  const index = todos.findIndex((item) => item.id === parseInt(id));
-
-  if(index !== -1){
-    todos.splice(index, 1);
-    saveToFile();
-    res.status(200).send('OK');
-  } else {
-    res.status(404).send('Not Found!');
-  }
-});
-
-module.exports = app;
-
-app.listen(PORT, () => {
-  console.log(`Server is running on localhost : ${PORT}`);
-});
+  
+  app.get('/todos', (req,res) => {
+      fs.readFile("todos.json", "utf-8", (err, data) => {
+          if (err) throw err
+          res.json(JSON.parse(data))
+      })
+  })
+  
+  app.get('/todos/:id', (req,res) => {
+      fs.readFile("todos.json","utf-8",(err,data) => {
+          if(err) throw err
+          const todos = JSON.parse(data)     // essential cuz this data will be passed in functions to check ID and stuff , earlier array todos was used 
+          const todoID = findID(todos,parseInt(req.params.id))
+          if(todoID === -1){
+          res.status(404).send("Not found!")
+          }
+          else{
+          res.status(200).json(todos[todoID])
+          }
+      })
+  })
+  
+  app.post('/todos',(req,res) => {
+    const task = {
+      id: Math.floor(Math.random() * 1000000),
+      title: req.body.title,
+      completed: false,
+      description: req.body.description
+    }
+    fs.readFile("todos.json","utf-8",(err,data) => {                  //read file
+      const todos = JSON.parse(data)                                  //parse data
+      todos.push(task)                                                //push new task
+      fs.writeFile("todos.json",JSON.stringify(todos), (err) => {     //write to file, stringify
+          if (err) throw err
+          res.status(201).json(task)
+      })
+    })
+  })
+  
+  app.put('/todos/:id',(req,res) => {
+      fs.readFile("todos.json","utf-8", (err,data) => {
+          if (err) throw err
+          const todos = JSON.parse(data)
+          const todoID = findID(todos, parseInt(req.params.id))
+          if(todoID === -1){
+              res.status(404).send("Not found!")
+            }
+            else{
+              /*
+                  FOR DIRECT ACCESS -> USING ARRAY TODOS
+               todos[todoID].title = req.body.title
+               todos[todoID].description = req.body.description
+               todos[todoID].completed = req.body.completed
+               res.status(200).json(todos[todoID])
+              */
+  
+              /*     FILE ACCESS       
+                  updated task object
+                  parsed todos update
+                  write to file
+              */
+              const updatedTask = {
+                  id: todos[todoID].id,
+                  title: req.body.title,
+                  description: req.body.description
+              }
+              todos[todoID] = updatedTask
+              fs.writeFile("todos.json", JSON.stringify(data), (err) => {
+                  if (err) throw err
+                  res.status(200).json(updatedTask)
+              })
+            }
+      })
+  })
+  
+  app.delete('/todos/:id',(req,res) => {
+      fs.readFile("todos.json","utf-8",(err,data) =>{
+          if(err) throw err
+          const todos = JSON.parse(data)
+          const todoID = findID(todos,parseInt(todos,req.params.id))
+          if(todoID === -1){
+              res.status(404).send("Not found!")
+          }
+          else{
+              todos = remove(todos,todoID)
+              // Write each change in File 
+              fs.writeFile("todos.json",JSON.stringify(todos),(err)=>{
+                  if (err) throw err
+                  res.status(200).send()
+              })
+          }
+      })
+  })
+  
+  // app.use((req,res,next) => {
+  //   res.status(404).send("Not found!")
+  // })
+  
+  app.get("/",(req,res)=>{
+      res.sendFile(path.join(__dirname,"index.html"))
+  })
+  app.listen(port, () => {
+      console.log(`App is listening on port ${port} `);
+    });
