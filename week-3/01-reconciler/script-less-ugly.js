@@ -11,6 +11,7 @@ function createDomElements(data) {
     // Check if a child with this ID already exists
     var existingChild = currentChildren.find(function(child) {
       return child.dataset.id === String(item.id);
+      // or return child.getAttribute("id") === String(item.id)
     });
 
     if (existingChild) {
@@ -26,6 +27,7 @@ function createDomElements(data) {
       added++;
       // If it doesn't exist, create it
       var childElement = document.createElement("div");
+      // childElement.setAttribute("id", item.id)     -> same thing 
       childElement.dataset.id = item.id; // Store the ID on the element for future lookups
 
       var grandChildElement1 = document.createElement("span");
